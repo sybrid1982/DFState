@@ -7,12 +7,16 @@ public class Map : MonoBehaviour {
     public int width = 20;
     public int depth = 20;
 
-    public Texture2D baseTexture;
+    public float sigmoidalInflectionPoint = 10;
 
     Dictionary<Point, Block> map;
 
-    public float blockChance = 0.4f;
+    // Less than 1 and you get spotty buildup in areas that should be solid
+    public float blockChance = 1f;
+
     public float dirtChance = 0.6f;
+
+    public float growthRate = 0.8f;
 
     #region Public
     public void CreateMap()
@@ -80,12 +84,37 @@ public class Map : MonoBehaviour {
 
     // Right now this just randomly makes blocks either solid or not
     // This is an obvious place to tweak things to be more interesting
+    /*private BlockType GetNewType(Point point)
+    {
+
+    }*/
+
+    /* The above version of this function is fine if you want random
+     * empty spaces and filled blocks, but now let's change things up
+     * This version of the function will instead look at how far to the
+     * right the new block is supposed to be, and the further right it is
+     * the more likely it is to put a block there instead of a point
+     * 
+     * This should lead to maps where the left side is largely empty
+     * and the right side is largely full
+     * FURTHERMORE, we will only be allowed to put a new solid block in
+     * if the block one down is also solid (or is off the map) */
+
     private BlockType GetNewType(Point point)
     {
-        if (Random.Range(0f, 1f) < blockChance)
-            return BlockType.Solid;
-        else
-            return BlockType.Empty;
+        BlockType returnType = BlockType.Empty;
+
+        if (sigmoidalInflectionPoint <= 0)
+            sigmoidalInflectionPoint = 1;
+
+        float sigmoidPoint = Sigmoid(point.x, sigmoidalInflectionPoint);
+
+        float chanceToProduceSolidBlock = sigmoidPoint * blockChance;
+
+        if (Random.Range(0f, 1f) < chanceToProduceSolidBlock)
+            returnType = BlockType.Solid;
+
+        return returnType;
     }
 
     private BlockContents GetNewContents()
@@ -189,6 +218,27 @@ public class Map : MonoBehaviour {
             Debug.LogWarning("Tried to find non-extant block at " + point.ToString());
             return null;
         }
+    }
+    #endregion
+
+    #region Math
+    private float Sigmoid(int x, float inflectionPoint)
+    {
+        // We'll use a Gompertz Curve for this, just because
+        // a is the maximum value we want out of this function (in this case, 1)
+        int a = 1;
+        // b is how much displacement occurs of the graph along the x axis
+        float b = inflectionPoint * length;
+        // c is the growth rate
+        // Smaller = more gradual increase over time
+        // Larger = sharper, more sudden change
+        float c = growthRate;
+
+        // a * e ^ (-b * e ^ (-c * x))
+        float returnValue = a * Mathf.Exp(-b * Mathf.Exp(-c*x));
+        // Debug.Log("For int " + x + " gompertz is " + returnValue);
+
+        return returnValue;
     }
     #endregion
 }

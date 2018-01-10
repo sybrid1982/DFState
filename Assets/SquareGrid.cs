@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class SquareGrid : MonoBehaviour {
 
@@ -10,7 +9,6 @@ public class SquareGrid : MonoBehaviour {
     public SquareCell cellPrefab;
 
     SquareMesh squareMesh;
-    const string buttonNotification = "Button_Notification";
 
     public Color defaultColor = Color.white;
     public Color[] colors;
@@ -20,11 +18,6 @@ public class SquareGrid : MonoBehaviour {
 
     int sizeX;
     int sizeY;
-
-    private void Start()
-    {
-        NotificationExtensions.AddObserver(this, OnFire, buttonNotification);
-    }
 
     public SquareCell GetSquareCellFromBlock(Block block)
     {
@@ -53,6 +46,8 @@ public class SquareGrid : MonoBehaviour {
         }
         SetNeighbors(cells);
         squareMesh.Triangulate(cells);
+        InputHandler ih = FindObjectOfType<InputHandler>();
+        ih.SetGrid(this);
     }
 
     void CreateCell(int x, int z, int i, Block block)
@@ -95,34 +90,24 @@ public class SquareGrid : MonoBehaviour {
         }
     }
 
-    void OnFire(object sender, object e)
-    {
-        if ((int)e == 0 && !EventSystem.current.IsPointerOverGameObject())
-        {
-            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if(Physics.Raycast(inputRay, out hit))
-            {
-                TouchCell(hit.point, touchColor);
-            }
-        }
-    }
-
-    void TouchCell(Vector3 position, Color newColor)
+    public SquareCell GetCell(Vector3 position)
     {
         position = transform.InverseTransformPoint(position);
         Point point = Point.FromPosition(position);
         int index = point.x + point.z * sizeX;
         if (index > cells.Length)
-            return;
+            return null;
 
-        SquareCell cell = cells[index];
-
-        squareMesh.Triangulate(cells);
+        return cells[index];
     }
 
     public void ChangeColor(int index)
     {
         touchColor = colors[index];
+    }
+
+    public void Refresh()
+    {
+        squareMesh.Triangulate(cells);
     }
 }
