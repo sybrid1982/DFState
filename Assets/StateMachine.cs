@@ -28,7 +28,6 @@ public class StateMachine : MonoBehaviour {
     public virtual void ChangeState<T>() where T : State
     {
         CurrentState = GetState<T>();
-        Debug.Log("Asked to change state");
     }
 
     protected virtual void Transition (State value)
@@ -47,6 +46,5 @@ public class StateMachine : MonoBehaviour {
             _currentState.Enter();
 
         _inTransition = false;
-        Debug.Log("Transition successful");
     }
 }

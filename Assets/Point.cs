@@ -74,4 +74,12 @@ public struct Point : IEquatable<Point> {
         int iZ = Mathf.RoundToInt(z);
         return new Point(iX, iY, iZ);
     }
+
+    public Vector3 ToCellPosition()
+    {
+        float x = this.x * SquareMetrics.sideLength;
+        float y = this.z * SquareMetrics.sideLength;
+        float z = this.y * SquareMetrics.sideLength;
+        return new Vector3(x, y, z);
+    }
 }

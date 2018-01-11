@@ -7,9 +7,13 @@ public class Map : MonoBehaviour {
     public int width = 20;
     public int depth = 20;
 
+    public Character characterPrefab;
+
     public float sigmoidalInflectionPoint = 10;
 
     Dictionary<Point, Block> map;
+
+    private SquareGrid squareGrid;
 
     // Less than 1 and you get spotty buildup in areas that should be solid
     public float blockChance = 1f;
@@ -38,6 +42,7 @@ public class Map : MonoBehaviour {
         CreateMap();
         UpdateController uc = FindObjectOfType<UpdateController>();
         uc.ChangeState<RunState>();
+        squareGrid = FindObjectOfType<SquareGrid>();
     }
 
     private void CreateLayer(int z)
@@ -153,7 +158,11 @@ public class Map : MonoBehaviour {
         }
     }
 
-
+    public void SpawnStartingCharacter()
+    {
+        Character newCharacter = Instantiate(characterPrefab);
+        newCharacter.SetupCharacter(map[new Point(0,0,0)]);
+    }
     #endregion
 
     #region GettingMapInfo

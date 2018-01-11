@@ -22,6 +22,13 @@ public class Block {
     BlockType _type;
     BlockContents _contents;
 
+    Character _character;
+
+    public Character Character {
+        get { return _character; }
+        set { _character = value; }
+    }
+
     Point _point;
 
     public Point Point {
@@ -111,5 +118,10 @@ public class Block {
     {
         neighbors[(int)direction] = block;
         block.neighbors[(int)direction.Opposite()] = this;
+    }
+
+    public Block GetNeighbor(SquareDirection direction)
+    {
+        return neighbors[(int)direction];
     }
 }
