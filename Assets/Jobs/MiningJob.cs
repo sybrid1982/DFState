@@ -6,7 +6,7 @@ public class MiningJob : Job {
 
     public MiningJob(Block block)
     {
-        _jobTypeName = "MINING";
+        _jobTypeName = JobMetrics.MINING_JOB_STRING;
         targetBlock = block;
     }
 }
