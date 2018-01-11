@@ -65,4 +65,9 @@ public class InputHandler : MonoBehaviour {
     {
 
     }
+
+    public void SetIHState (int index)
+    {
+        handlerState = (IHState)index;
+    }
 }
