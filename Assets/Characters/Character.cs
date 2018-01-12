@@ -5,6 +5,13 @@ using UnityEngine;
 public class Character : MonoBehaviour {
     StateMachine stateMachine;
     Block myBlock;
+    Job job;
+    List<string> trackedJobs;
+
+    public bool Unemployed
+    {
+        get { return (job == null); }
+    }
 
     private void Awake()
     {
@@ -12,6 +19,8 @@ public class Character : MonoBehaviour {
             stateMachine = gameObject.AddComponent<StateMachine>();
         }
         stateMachine.ChangeState<CSIdle>();
+        trackedJobs = new List<string>();
+        trackedJobs.Add(JobMetrics.MINING_JOB_TAG);
     }
 
     public void SetupCharacter(Block block)
@@ -31,5 +40,39 @@ public class Character : MonoBehaviour {
         myBlock = block;
 
         transform.localPosition = myBlock.Point.ToCellPosition();
+    }
+
+    public void TrackJob(string job)
+    {
+        if(trackedJobs.Contains(job)==false)
+            trackedJobs.Add(job);
+    }
+
+    public void StopTrackingJob(string job)
+    {
+        if(trackedJobs.Contains(job)==true)
+            trackedJobs.Remove(job);
+    }
+
+    public int GetTrackedJobsListSize()
+    {
+        return trackedJobs.Count;
+    }
+
+    public string GetJobFromTrackedListByIndex(int index)
+    {
+        if (index < trackedJobs.Count)
+            return trackedJobs[index];
+        else
+        {
+            Debug.LogError("Requested Index out of range");
+            return null;
+        }
+    }
+
+    public void SetJob(Job j)
+    {
+        job = j;
+        Debug.Log("Got Job!");
     }
 }

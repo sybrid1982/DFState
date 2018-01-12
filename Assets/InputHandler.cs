@@ -63,7 +63,10 @@ public class InputHandler : MonoBehaviour {
 
     void Mine(SquareCell cell)
     {
-
+        if(cell.block.Type == BlockType.Solid)
+        {
+            NotificationExtensions.PostNotification(this, JobMetrics.MINING_JOB_POST_NOTICE, cell.block);
+        }
     }
 
     public void SetIHState (int index)

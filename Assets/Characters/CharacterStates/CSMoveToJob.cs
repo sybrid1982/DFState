@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CSMoveToJob : MonoBehaviour {
+public class CSMoveToJob : CSState {
 
 	// Use this for initialization
 	void Start () {
