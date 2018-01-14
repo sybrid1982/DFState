@@ -74,5 +74,6 @@ public class Character : MonoBehaviour {
     {
         job = j;
         Debug.Log("Got Job!");
+        stateMachine.ChangeState<CSMoveToJob>();
     }
 }

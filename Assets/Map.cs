@@ -62,22 +62,11 @@ public class Map : MonoBehaviour {
     private void CreateBlock(int x, int y, int z)
     {
         Point newPoint = new Point(x, y, z);
-        BlockType newType = GetNewType(newPoint);
+        BlockState newType = GetNewType(newPoint);
         // Debug.Log("Creating a block at point " + newPoint.ToString());
 
-        Block newBlock;
-        if (newType == BlockType.Empty)
-            newBlock = new Block(newPoint);
-        else if (newType == BlockType.Slope || newType == BlockType.Solid)
-        {
-            // We are going to need to assign this a content now
-            BlockContents newContents = GetNewContents();
-            newBlock = new Block(newType, newContents, newPoint);
-        } else
-        {
-            // This is a water block, so contents and type are water
-            newBlock = new Block(newType, BlockContents.Water, newPoint);
-        }
+        Block newBlock = new Block(newType, newPoint);
+        
         
         if (map.ContainsKey(newPoint))
             Debug.Log("Map contains point " + newPoint.ToString() + " already.");
@@ -105,9 +94,9 @@ public class Map : MonoBehaviour {
      * FURTHERMORE, we will only be allowed to put a new solid block in
      * if the block one down is also solid (or is off the map) */
 
-    private BlockType GetNewType(Point point)
+    private BlockState GetNewType(Point point)
     {
-        BlockType returnType = BlockType.Empty;
+        BlockState returnType = new BS_Empty();
 
         if (sigmoidalInflectionPoint <= 0)
             sigmoidalInflectionPoint = 1;
@@ -117,7 +106,7 @@ public class Map : MonoBehaviour {
         float chanceToProduceSolidBlock = sigmoidPoint * blockChance;
 
         if (Random.Range(0f, 1f) < chanceToProduceSolidBlock)
-            returnType = BlockType.Solid;
+            returnType = new BS_Solid(GetNewContents());
 
         return returnType;
     }

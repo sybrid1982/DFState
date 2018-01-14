@@ -43,9 +43,12 @@ public class JobList : MonoBehaviour  {
     public void AddJobToQueue(Job job)
     {
         Queue<Job> jobQueue;
-        
+
         if (jobNameToJobQueueMap.ContainsKey(job.JobType) == false)
+        {
             jobQueue = new Queue<Job>();
+            jobNameToJobQueueMap.Add(job.JobType, jobQueue);
+        }
         else
             jobQueue = jobNameToJobQueueMap[job.JobType];
 
@@ -56,7 +59,7 @@ public class JobList : MonoBehaviour  {
         }
         
         jobQueue.Enqueue(job);
-        Debug.Log("Created job added to jobQueue " + job.JobType + " at index " + jobQueue.Count);
+        Debug.Log("Created job added to jobQueue " + job.JobType + " targeting block " + job.GetTargetBlock().Point.ToString() + " at index " + jobQueue.Count);
     }
 
     void CreateMiningJob(object sender, object target)

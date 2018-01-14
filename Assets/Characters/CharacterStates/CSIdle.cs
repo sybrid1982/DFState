@@ -71,14 +71,12 @@ public class CSIdle : CSState {
 
         if (jobqueue == null)
         {
-            Debug.LogError("No JobList found to GetJobs");
             return false;
         }
         // If we get a job, return true
         Job j = jobqueue.GetNextJobInQueue(jobType, character);
         if (j != null)
         {
-            Debug.Log("Got a job!");
             character.SetJob(j);
             return true;
         }

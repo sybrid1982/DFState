@@ -2,25 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BlockType
-{
-    Solid,
-    Slope,
-    Water,
-    Empty
-}
-
-public enum BlockContents
-{
-    Dirt,
-    Stone,
-    Water,
-    Empty
-}
 
 public class Block { 
-    BlockType _type;
-    BlockContents _contents;
+    BlockState _type;
 
     Character _character;
 
@@ -42,7 +26,7 @@ public class Block {
 
     public Block[] neighbors = new Block[8];
 
-    public BlockType Type
+    public BlockState Type
     {
         get { return _type; }
         // In the future, changing the block type should send a notification
@@ -54,13 +38,10 @@ public class Block {
             else
             {
                 _type = value;
-                if(_type == BlockType.Solid || _type == BlockType.Slope)
+                // When we place a solid or ramp block, we'll automagically add a floor for the block to sit on
+                if(_type is BS_Solid || _type is BS_Ramp)
                 {
                     HasFloor = true;
-                }
-                if(_type == BlockType.Empty)
-                {
-                    _contents = BlockContents.Empty;
                 }
             }
         }
@@ -68,7 +49,7 @@ public class Block {
 
     public BlockContents Contents
     {
-        get { return _contents; }
+        get { return _type.Contents; }
     }
 
     public bool HasFloor
@@ -81,8 +62,11 @@ public class Block {
             if(value == false && _hasFloor == true)
             {
                 // For now, we'll replace the removed block with a ramp if it was solid
-                if (Type == BlockType.Solid)
-                    Type = BlockType.Slope;
+                if (Type is BS_Solid)
+                {
+                    BlockContents blockContents = Type.Contents;
+                    Type = new BS_Ramp(blockContents);
+                }
             }
 
             // In the future, when a floor is removed we should probably have things drop down to the next solid block below
@@ -95,22 +79,20 @@ public class Block {
     // In this bool
     public bool IsEmpty
     {
-        get { return (Type == BlockType.Empty && HasFloor == false); }
+        get { return (Type is BS_Empty && HasFloor == false); }
     }
 
     // Constructor for empty blocks
     public Block(Point point)
     {
-        _type = BlockType.Empty;
-        _contents = BlockContents.Empty;
+        _type = new BS_Empty();
         _point = point;
     }
 
     // Constructor for non-empty blocks
-    public Block(BlockType type, BlockContents contents, Point point)
+    public Block(BlockState type, Point point)
     {
         _type = type;
-        _contents = contents;
         _point = point;
     }
 

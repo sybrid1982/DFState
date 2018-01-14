@@ -17,8 +17,10 @@ public class UpdateController : StateMachine {
     // this is the number of seconds per tick
     private float defaultSpeed = 1;
     private float timeToNextUpdate = 0f;
+    private float timeToNextCentitick = 0f;
 
     const string UpdateName = "TICK_POSTED";
+    const string CentiUpdate = "CENTITICK_POSTED";
 
     public GameSpeed Speed {
         get
@@ -47,16 +49,27 @@ public class UpdateController : StateMachine {
         // Seconds / Tick
         float speedModifier = (float)(Mathf.Pow(2, (int)Speed - 1));
         float timePerTick = defaultSpeed / speedModifier;
-        // Debug.Log(speedModifier + ", " + timePerTick);
         // so to get whether it's time for a tick yet, check
         // whether time.deltatime has reached the threshhold
         // number of seconds for a tick
+
+        // We are also going to need a time per centitick,
+        // Which for now will be for movement but in the future may be useful for other things
+        float timePerCentiTick = timePerTick / 100f;
         
         // But only do this if we are in the RunState
         if(CurrentState == GetState<RunState>())
         {
             timeToNextUpdate += time;
+            timeToNextCentitick += time;
+
             // Debug.Log("Next Update is " + timeToNextUpdate.ToString() + " / " + timePerTick);
+            if (timeToNextCentitick >= timePerCentiTick)
+            {
+                NotificationExtensions.PostNotification(this, CentiUpdate);
+                timeToNextCentitick = 0;
+            }
+
             if (timeToNextUpdate >= timePerTick)
             {
                 NotificationExtensions.PostNotification(this, UpdateName);

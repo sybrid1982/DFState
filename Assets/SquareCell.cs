@@ -14,7 +14,7 @@ public class SquareCell : MonoBehaviour {
     public int GetElevation()
     {
         int hasBlock = 0;
-        if (block.Type == BlockType.Solid)
+        if (block.Type is BS_Solid)
             hasBlock = 1;
         return point.z + hasBlock;
     }
@@ -53,11 +53,18 @@ public class SquareCell : MonoBehaviour {
         transform.localPosition = position;
     }
 
+    // Color should be moved to the BlockState class so that this
+    // function just returns whatever the blockstate thinks the color should be
+    // For water, that'll just be blue, but solid blocks will return colors
+    // based on their material state, floors will return colors based on whether
+    // they have grass or are roads or stone or whatever, etc
+
+    // Leaving this for now, but this should be very different soon
     private Color GetColorFromBlockType()
     {
-        if (block.Type == BlockType.Empty)
+        if (block.Type is BS_Empty)
             return Color.green;
-        if (block.Type == BlockType.Water)
+        if (block.Type is BS_Water)
             return Color.blue;
         else
         {
