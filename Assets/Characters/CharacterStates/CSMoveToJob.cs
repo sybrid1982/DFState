@@ -26,6 +26,12 @@ public class CSMoveToJob : CSState {
     protected override void OnUpdateTick(object sender, object info)
     {
         base.OnUpdateTick(sender, info);
+        // Do we still have a job?  If we don't, go idle
+        if (character.Job == null)
+        {
+            character.GoIdle();
+            return;
+        }
         // If the character doesn't have a map to the target space, get one
         Block nextMoveBlock = character.GetNextPathBlock();
         if (nextMoveBlock != null)

@@ -5,9 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class SquareMesh : MonoBehaviour {
     Mesh squareMesh;
-    List<Vector3> vertices;
-    List<int> triangles;
-    List<Color> colors;
+    static List<Vector3> vertices = new List<Vector3>();
+    static List<int> triangles = new List<int>();
+    static List<Color> colors = new List<Color>();
     
 
     MeshCollider meshCollider;
@@ -17,9 +17,6 @@ public class SquareMesh : MonoBehaviour {
         GetComponent<MeshFilter>().mesh = squareMesh = new Mesh();
         meshCollider = gameObject.AddComponent<MeshCollider>();
         squareMesh.name = "Square Mesh";
-        vertices = new List<Vector3>();
-        colors = new List<Color>();
-        triangles = new List<int>();
     }
 
     public void Triangulate(SquareCell[] cells)

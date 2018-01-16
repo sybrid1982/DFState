@@ -22,6 +22,25 @@ public class SquareCell : MonoBehaviour {
     [SerializeField]
     SquareCell[] neighbors;
 
+    SquareGridChunk chunk;
+    public SquareGridChunk Chunk
+    {
+        set
+        {
+            chunk = value;
+        }
+        get
+        {
+            return chunk;
+        }
+    }
+
+    public SquareCell()
+    {
+        NotificationExtensions.AddObserver(this, LookToSeeIfNeedRefresh, BlockMetrics.BlockChangeAnnouncment);
+    }
+
+
     public SquareCell GetNeighbor (SquareDirection direction)
     {
         return neighbors[(int)direction];
@@ -66,5 +85,27 @@ public class SquareCell : MonoBehaviour {
             return Color.green;
         else
             return block.Contents.color;
+    }
+
+    public void LookToSeeIfNeedRefresh(object sender, object info)
+    {
+        if(sender == block)
+        {
+            Refresh();
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                SquareCell neighbor = neighbors[i];
+                if (neighbor != null && neighbor.chunk != chunk)
+                {
+                    neighbor.Refresh();
+                }
+            }
+        }
+    }
+
+    public void Refresh()
+    {
+        RefreshPosition();
+        chunk.Refresh();
     }
 }

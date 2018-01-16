@@ -87,6 +87,8 @@ public class Character : MonoBehaviour {
 
     public void SetJob(Job j)
     {
+        if (j == null)
+            return;
         // Set my job
         myJob = j;
         // What if this job requires something?

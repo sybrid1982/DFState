@@ -42,6 +42,8 @@ public class Map : MonoBehaviour {
 
         for (int i = 0; i < depth; i++)
             CreateLayer(i);
+
+        NotificationExtensions.AddObserver(this, InvalidateBlockGraph, BlockMetrics.BlockChangeAnnouncment);
     }
 
     public Block[,] GetMapLayer(int z)
@@ -49,7 +51,8 @@ public class Map : MonoBehaviour {
         return GetLayer(z);
     }
 
-    public void InvalidateBlockGraph()
+    // We don't care who sent this or what they had to say, we just need to wipe out the blockGraph
+    public void InvalidateBlockGraph(object sender, object info)
     {
         blockGraph = null;
     }

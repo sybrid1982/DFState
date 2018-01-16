@@ -49,6 +49,13 @@ public class Block {
                 {
                     HasFloor = true;
                 }
+                // Ok, so, we know we've changed the block type.
+                // The block could make an announcement that it's been broken.
+                // The map could be one listener, but maybe that should be for mining jobs to announce when they're done
+                // SquareGridChunks could be another listener, and when they hear one of their own cells have changed,
+                // They could refresh
+                // Alternatively the squarecells could listen and then notify the squaregridchunk that they need to update
+                NotificationExtensions.PostNotification(this, BlockMetrics.BlockChangeAnnouncment, Point);
             }
         }
     }

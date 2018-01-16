@@ -14,20 +14,21 @@ public class SquareGridChunk : MonoBehaviour {
         cells = new SquareCell[SquareMetrics.chunkSizeX * SquareMetrics.chunkSizeY];
     }
 
-    private void Start()
-    {
-        if(cells.Length > 0)
-            squareMesh.Triangulate(cells);
-    }
-
     public void AddCell(int index, SquareCell cell)
     {
         cells[index] = cell;
         cell.transform.SetParent(transform, false);
+        cell.Chunk = this;
     }
 
     public void Refresh()
     {
+        enabled = true;
+    }
+
+    private void LateUpdate()
+    {
         squareMesh.Triangulate(cells);
+        enabled = false;
     }
 }
