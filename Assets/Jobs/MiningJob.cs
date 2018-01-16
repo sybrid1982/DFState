@@ -9,4 +9,9 @@ public class MiningJob : Job {
         _jobTypeName = JobMetrics.MINING_JOB_TAG;
         targetBlock = block;
     }
+
+    public override bool DoJob()
+    {
+        return targetBlock.DamageBlock(1.5f);
+    }
 }

@@ -63,8 +63,8 @@ public class CameraController : MonoBehaviour {
             return;
 
         Vector3 newPosition = focusPoint.transform.position + moveDirection * Time.deltaTime * cameraSpeed;
-        newPosition.x = Mathf.Clamp(newPosition.x, 0, (map.length * SquareMetrics.sideLength));
-        newPosition.z = Mathf.Clamp(newPosition.z, -5, (map.width * SquareMetrics.sideLength));
+        newPosition.x = Mathf.Clamp(newPosition.x, 0, (map.cellCountX * SquareMetrics.sideLength));
+        newPosition.z = Mathf.Clamp(newPosition.z, -5, (map.cellCountZ * SquareMetrics.sideLength));
         focusPoint.transform.position = newPosition;
         moveDirection = Vector3.zero;
     }

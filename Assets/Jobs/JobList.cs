@@ -59,7 +59,6 @@ public class JobList : MonoBehaviour  {
         }
         
         jobQueue.Enqueue(job);
-        Debug.Log("Created job added to jobQueue " + job.JobType + " targeting block " + job.GetTargetBlock().Point.ToString() + " at index " + jobQueue.Count);
     }
 
     void CreateMiningJob(object sender, object target)
@@ -78,5 +77,10 @@ public class JobList : MonoBehaviour  {
             }
         }
         return false;
+    }
+
+    void ReturnJob()
+    {
+
     }
 }

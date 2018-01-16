@@ -28,7 +28,7 @@ public class MapDisplay : MonoBehaviour {
 
         Block[,] layer = map.GetMapLayer(cc.DisplayZ);
 
-        squareGrid.CreateMap(layer, map.length, map.width);
+        squareGrid.CreateMap(layer, map.cellCountX, map.cellCountZ);
         map.SpawnStartingCharacter();
     }
 }

@@ -1,16 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Character : MonoBehaviour {
     StateMachine stateMachine;
     Block myBlock;
-    Job job;
+    Job myJob;
     List<string> trackedJobs;
+    Path_AStar myPath;
+    Map map;
 
     public bool Unemployed
     {
-        get { return (job == null); }
+        get { return (myJob == null); }
+    }
+
+    public Block Block {
+        get { return myBlock; }
+    }
+
+    public Job Job {
+        get { return myJob; }
     }
 
     private void Awake()
@@ -23,16 +32,22 @@ public class Character : MonoBehaviour {
         trackedJobs.Add(JobMetrics.MINING_JOB_TAG);
     }
 
-    public void SetupCharacter(Block block)
+    public void SetupCharacter(Block block, Map map)
     {
         SetBlock(block);
+        this.map = map;
     }
 
     public void MoveToNewSpace(SquareDirection direction)
     {
-        Debug.Log("Asked to move " + direction.ToString());
-        if (myBlock.GetNeighbor(direction) != null)
+        if (myBlock.GetNeighbor(direction) != null && myBlock.GetNeighbor(direction).IsWalkable)
             SetBlock(myBlock.GetNeighbor(direction));
+    }
+
+    public void MoveToNewSpace(Block block)
+    {
+        if (block != null)
+            SetBlock(block);
     }
 
     private void SetBlock (Block block)
@@ -72,8 +87,42 @@ public class Character : MonoBehaviour {
 
     public void SetJob(Job j)
     {
-        job = j;
-        Debug.Log("Got Job!");
+        // Set my job
+        myJob = j;
+        // What if this job requires something?
+        // Mining a block might require a mining pick (TOOL)
+        // Building a door might require something to build the door out of (MATERIAL)
+        // Might need multiple things (Carving a wood figurine might require a knife (TOOL) and a piece of wood (MATERIAL)
+        // TODO: CHECK REQUIREMENTS STEP - If requirements aren't met, then we need to instead try to path
+        // to where we can go to meet those requirements (ie, if we need a knife, we need to go find a knife)
+
+        // Set my path (if we meet requirements, to the job location, if we don't, to required materials and tools)
+        myPath = new Path_AStar(map, myBlock, myJob.GetTargetBlock());
+
+        // Set my state (instead of move to job, maybe this should be 'move to location' state?)
         stateMachine.ChangeState<CSMoveToJob>();
+    }
+
+    public void ArrivedAtJob()
+    {
+        stateMachine.ChangeState<CSWorkJob>();
+    }
+
+    public Block GetNextPathBlock()
+    {
+        if (myPath.Length() > 0)
+        {
+            return myPath.GetNextBlock();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void GoIdle()
+    {
+        myJob = null;
+        stateMachine.ChangeState<CSIdle>();
     }
 }

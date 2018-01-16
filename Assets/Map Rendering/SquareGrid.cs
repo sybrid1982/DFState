@@ -7,17 +7,20 @@ public class SquareGrid : MonoBehaviour {
     SquareCell[] cells;
 
     public SquareCell cellPrefab;
-
-    SquareMesh squareMesh;
+    public SquareGridChunk squareGridChunk;
 
     public Color defaultColor = Color.white;
     public Color[] colors;
     public Color touchColor = Color.magenta;
 
     Dictionary<Block, SquareCell> blocksToCellsMap;
+    SquareGridChunk[] chunks;
 
     int sizeX;
     int sizeY;
+
+    int chunkCountX;
+    int chunkCountY;
 
     public SquareCell GetSquareCellFromBlock(Block block)
     {
@@ -33,33 +36,66 @@ public class SquareGrid : MonoBehaviour {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
 
-        squareMesh = GetComponentInChildren<SquareMesh>();
+        CreateChunks();
+        CreateCells(blocks, sizeX, sizeY);
 
+        InputHandler ih = FindObjectOfType<InputHandler>();
+        ih.SetGrid(this);
+    }
+
+    private void CreateCells(Block[,] blocks, int sizeX, int sizeY)
+    {
         cells = new SquareCell[sizeX * sizeY];
 
-        for(int z = 0, i = 0; z < sizeY; z++)
+        for (int z = 0, i = 0; z < sizeY; z++)
         {
-            for(int x=0; x < sizeX; x++)
+            for (int x = 0; x < sizeX; x++)
             {
                 CreateCell(x, z, i++, blocks[x, z]);
             }
         }
         SetNeighbors(cells);
-        squareMesh.Triangulate(cells);
-        InputHandler ih = FindObjectOfType<InputHandler>();
-        ih.SetGrid(this);
+    }
+
+    void CreateChunks()
+    {
+        chunkCountX = sizeX / SquareMetrics.chunkSizeX;
+        chunkCountY = sizeY / SquareMetrics.chunkSizeY;
+        chunks = new SquareGridChunk[chunkCountX * chunkCountY];
+
+        for(int z = 0, i = 0; z < chunkCountY; z++)
+        {
+            for(int x = 0; x < chunkCountX; x++)
+            {
+                SquareGridChunk chunk = chunks[i++] = Instantiate(squareGridChunk);
+                chunk.transform.SetParent(transform);
+            }
+        }
     }
 
     void CreateCell(int x, int z, int i, Block block)
     {
         SquareCell cell = cells[i] = Instantiate(cellPrefab);
-        cell.transform.SetParent(transform, false);
+
         cell.point = block.Point;
         cell.block = block;
 
         cell.RefreshPosition();
 
         blocksToCellsMap.Add(block, cell);
+
+        AddCellToChunk(x, z, cell);
+    }
+
+    void AddCellToChunk(int x, int z, SquareCell cell)
+    {
+        int chunkX = x / SquareMetrics.chunkSizeX;
+        int chunkZ = z / SquareMetrics.chunkSizeY;
+        SquareGridChunk chunk = chunks[chunkX + chunkZ * chunkCountX];
+
+        int localX = x - chunkX * SquareMetrics.chunkSizeY;
+        int localZ = z - chunkZ * SquareMetrics.chunkSizeY;
+        chunk.AddCell(localX + localZ * SquareMetrics.chunkSizeX, cell);
     }
 
     private void SetNeighbors(SquareCell[] cells)
@@ -104,10 +140,5 @@ public class SquareGrid : MonoBehaviour {
     public void ChangeColor(int index)
     {
         touchColor = colors[index];
-    }
-
-    public void Refresh()
-    {
-        squareMesh.Triangulate(cells);
     }
 }

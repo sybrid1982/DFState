@@ -3,17 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Map : MonoBehaviour {
-    public int length = 20;
-    public int width = 20;
+    // Size of the map
+    public int chunkCountX = 5, chunkCountZ = 5;
     public int depth = 20;
 
+    public int cellCountX { get { return chunkCountX * SquareMetrics.chunkSizeX; } }
+    public int cellCountZ { get { return chunkCountZ * SquareMetrics.chunkSizeY; } }
+
+    // This will eventually not belong here
     public Character characterPrefab;
 
+    // Used in generating solid/empty block spaces
     public float sigmoidalInflectionPoint = 10;
+
+    // The pathfinding graph used to navigate the map
+    public Path_BlockGraph blockGraph;
 
     Dictionary<Point, Block> map;
 
+    // SquareGrid handles graphics!
     private SquareGrid squareGrid;
+
+    private Dictionary<string, BlockContents> namesToPrototypesMap;
 
     // Less than 1 and you get spotty buildup in areas that should be solid
     public float blockChance = 1f;
@@ -26,6 +37,9 @@ public class Map : MonoBehaviour {
     public void CreateMap()
     {
         map = new Dictionary<Point, Block>();
+        namesToPrototypesMap = new Dictionary<string, BlockContents>();
+        CreatePrototypes();
+
         for (int i = 0; i < depth; i++)
             CreateLayer(i);
     }
@@ -33,6 +47,18 @@ public class Map : MonoBehaviour {
     public Block[,] GetMapLayer(int z)
     {
         return GetLayer(z);
+    }
+
+    public void InvalidateBlockGraph()
+    {
+        blockGraph = null;
+    }
+
+    public Path_BlockGraph GetBlockGraph()
+    {
+        if(blockGraph == null)
+            blockGraph = new Path_BlockGraph(this);
+        return blockGraph;
     }
     #endregion
 
@@ -47,13 +73,13 @@ public class Map : MonoBehaviour {
 
     private void CreateLayer(int z)
     {
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < cellCountZ; i++)
             CreateRow(i, z);
     }
 
     private void CreateRow(int y, int z)
     {
-        for (int i = 0; i < length; i++)
+        for (int i = 0; i < cellCountX; i++)
         {
             CreateBlock(i, y, z);
         }
@@ -65,7 +91,7 @@ public class Map : MonoBehaviour {
         BlockState newType = GetNewType(newPoint);
         // Debug.Log("Creating a block at point " + newPoint.ToString());
 
-        Block newBlock = new Block(newType, newPoint);
+        Block newBlock = new Block(newType, newPoint, this);
         
         
         if (map.ContainsKey(newPoint))
@@ -75,24 +101,6 @@ public class Map : MonoBehaviour {
 
         SetNeighbors(x, y, newBlock);
     }
-
-    // Right now this just randomly makes blocks either solid or not
-    // This is an obvious place to tweak things to be more interesting
-    /*private BlockType GetNewType(Point point)
-    {
-
-    }*/
-
-    /* The above version of this function is fine if you want random
-     * empty spaces and filled blocks, but now let's change things up
-     * This version of the function will instead look at how far to the
-     * right the new block is supposed to be, and the further right it is
-     * the more likely it is to put a block there instead of a point
-     * 
-     * This should lead to maps where the left side is largely empty
-     * and the right side is largely full
-     * FURTHERMORE, we will only be allowed to put a new solid block in
-     * if the block one down is also solid (or is off the map) */
 
     private BlockState GetNewType(Point point)
     {
@@ -114,9 +122,9 @@ public class Map : MonoBehaviour {
     private BlockContents GetNewContents()
     {
         if (Random.Range(0f, 1f) < dirtChance)
-            return BlockContents.Dirt;
+            return new BlockContents(namesToPrototypesMap["Dirt"]);
         else
-            return BlockContents.Stone;
+            return new BlockContents(namesToPrototypesMap["Stone"]);
     }
 
     private void SetNeighbors(int x, int y, Block block)
@@ -138,7 +146,7 @@ public class Map : MonoBehaviour {
                 newNeighbor = GetBlockAt(newNeighborPoint);
                 block.SetNeighbor(SquareDirection.SW, newNeighbor);
             }
-            if (x < length - 1)
+            if (x < cellCountX - 1)
             {
                 newNeighborPoint = new Point(block.Point.x + 1, block.Point.y - 1, block.Point.z);
                 newNeighbor = GetBlockAt(newNeighborPoint);
@@ -150,7 +158,7 @@ public class Map : MonoBehaviour {
     public void SpawnStartingCharacter()
     {
         Character newCharacter = Instantiate(characterPrefab);
-        newCharacter.SetupCharacter(map[new Point(0,0,0)]);
+        newCharacter.SetupCharacter(map[new Point(0,0,0)], this);
     }
     #endregion
 
@@ -171,10 +179,10 @@ public class Map : MonoBehaviour {
             return null;
         else
         {
-            Block[,] layer = new Block[length, width];
-            for (int x = 0; x < length; x++)
+            Block[,] layer = new Block[cellCountX, cellCountZ];
+            for (int x = 0; x < cellCountX; x++)
             {
-                for (int y = 0; y < width; y++)
+                for (int y = 0; y < cellCountZ; y++)
                 {
                     Block targetBlock = GetBlockAt(new Point(x, y, z));
                     if(targetBlock == null)
@@ -205,6 +213,16 @@ public class Map : MonoBehaviour {
         }
     }
 
+    public List<Block> GetAllBlocks()
+    {
+        List<Block> blocks = new List<Block>();
+        foreach (Block block in map.Values)
+        {
+            blocks.Add(block);
+        }
+        return blocks;
+    }
+
     private Block GetBlockAt(Point point)
     {
         if (map.ContainsKey(point))
@@ -219,6 +237,18 @@ public class Map : MonoBehaviour {
     }
     #endregion
 
+    #region Prototyping
+    void CreatePrototypes()
+    {
+        BlockContents dirt = new BlockContents("Dirt", 5, new Color(0.4f, 0.4f, 0f, 1f));
+        BlockContents stone = new BlockContents("Stone", 10, Color.gray);
+        BlockContents water = new BlockContents("Water", int.MaxValue, Color.blue);
+        namesToPrototypesMap.Add("Dirt", dirt);
+        namesToPrototypesMap.Add("Stone", stone);
+        namesToPrototypesMap.Add("Water", water);
+    }
+    #endregion
+
     #region Math
     private float Sigmoid(int x, float inflectionPoint)
     {
@@ -226,7 +256,7 @@ public class Map : MonoBehaviour {
         // a is the maximum value we want out of this function (in this case, 1)
         int a = 1;
         // b is how much displacement occurs of the graph along the x axis
-        float b = inflectionPoint * length;
+        float b = inflectionPoint * cellCountX;
         // c is the growth rate
         // Smaller = more gradual increase over time
         // Larger = sharper, more sudden change

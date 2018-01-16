@@ -27,15 +27,40 @@ public class CSMoveToJob : CSState {
     {
         base.OnUpdateTick(sender, info);
         // If the character doesn't have a map to the target space, get one
-        
-        // If, after trying to get a map, there is still no map, then this job cannot
-        // be reached and we should become idle again
+        Block nextMoveBlock = character.GetNextPathBlock();
+        if (nextMoveBlock != null)
+        {
+            character.MoveToNewSpace(nextMoveBlock);
+        } else
+        {
+            // If, after trying to get a map, there is still no map, then this job cannot
+            // be reached and we should become idle again
+            ReturnJob();
+            character.GoIdle();
+        }
+
 
         // If we're in a space that is a neighbor to the target space, then we should
         // bail into some sort of 'do job' state
-
-        // Finally, if we get to here, then we should have a map and should be able to
-        // move to the target space and should do so
+        if (CheckIfAdjacentToJob())
+        {
+            character.ArrivedAtJob();
+        }
     }
 
+    private void ReturnJob()
+    {
+        // For now, destroy the job
+        character.SetJob(null);
+        // in the future, we will want to send it back to the joblist, perhaps with a notificiation
+        // like "return_job" with the job being returned as the info
+    }
+
+    private bool CheckIfAdjacentToJob()
+    {
+        if(character.Block.IsNeighbor(character.Job.GetTargetBlock()))
+            return true;
+
+        return false;
+    }
 }

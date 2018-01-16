@@ -64,14 +64,7 @@ public class SquareCell : MonoBehaviour {
     {
         if (block.Type is BS_Empty)
             return Color.green;
-        if (block.Type is BS_Water)
-            return Color.blue;
         else
-        {
-            if (block.Contents == BlockContents.Dirt)
-                return new Color(0.4f, 0.4f, 0f, 1f);
-            else
-                return Color.gray;
-        }
+            return block.Contents.color;
     }
 }

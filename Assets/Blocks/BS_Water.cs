@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BS_Water : BlockState {
-    public BS_Water()
+    public BS_Water(BlockContents contents)
     {
         _moveCost = 5;
-        _contents = BlockContents.Water;
+        _contents = contents;
     }
 }

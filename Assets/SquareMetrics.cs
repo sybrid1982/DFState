@@ -9,6 +9,8 @@ public static class SquareMetrics {
     public const float solidFactor = 0.8f;
     public const float blendFactor = 1f - solidFactor;
 
+    public const int chunkSizeX = 5, chunkSizeY = 5;
+
     static Vector3[] corners = {
         new Vector3(-innerRadius, 0f, -innerRadius),  // Bottom Left
         new Vector3(-innerRadius, 0f, innerRadius),   // Top Left

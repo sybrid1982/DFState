@@ -12,9 +12,10 @@ public abstract class Job  {
         get { return _jobTypeName; }
     }
 
-    public virtual void DoJob()
+    public virtual bool DoJob()
     {
         Debug.Log("Working job " + _jobTypeName);
+        return false;
     }
 
     public virtual Block GetTargetBlock()

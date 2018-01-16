@@ -28,4 +28,8 @@ public static class SquareDirectionExtensions {
     {
         return (int)direction > 1 ? (direction - 2) : (SquareDirection)6;
     }
+    public static SquareDirection ReturnOrthogonal (int index)
+    {
+        return (SquareDirection)(2 * index);
+    }
 }

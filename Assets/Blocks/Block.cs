@@ -3,15 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Block { 
+public class Block {
+    #region Properties/Variables/Getters/Setters
     BlockState _type;
 
     Character _character;
+
+    Map map;
 
     public Character Character {
         get { return _character; }
         set { _character = value; }
     }
+
+    int health;
 
     Point _point;
 
@@ -32,6 +37,7 @@ public class Block {
         // In the future, changing the block type should send a notification
         // Which the display would then read to determine if it needs to update
         // Anything currently
+        // Also should determine if we need to update the pathfinding graph
         set {
             if (value == _type)
                 return;
@@ -44,6 +50,23 @@ public class Block {
                     HasFloor = true;
                 }
             }
+        }
+    }
+
+    // This seems like overkill now, but when we start adding in modifiers
+    // to the move cost for a block like furniture MoveCost, then we'll
+    // want this to be able to account for those factors
+
+    // For now, if there's no floor for an empty block, then we will
+    // replace the default movecost of 1 with 0 because you can't walk
+    // in empty spaces
+    public int MoveCost {
+        get
+        {
+            int moveCost = Type.MoveCost;
+            if (!HasFloor)
+                moveCost = 0;
+            return moveCost;
         }
     }
 
@@ -81,21 +104,33 @@ public class Block {
     {
         get { return (Type is BS_Empty && HasFloor == false); }
     }
+    
+    public bool IsWalkable {
+        get { return (Type.MoveCost > 0); }
+    }
 
+    #endregion
+
+    #region Constructors
     // Constructor for empty blocks
-    public Block(Point point)
+    public Block(Point point, Map map)
     {
         _type = new BS_Empty();
         _point = point;
+        this.map = map;
     }
 
     // Constructor for non-empty blocks
-    public Block(BlockState type, Point point)
+    public Block(BlockState type, Point point, Map map)
     {
         _type = type;
         _point = point;
+        this.map = map;
     }
+    #endregion
 
+    #region Public
+    #region Neighbors
     public void SetNeighbor(SquareDirection direction, Block block)
     {
         neighbors[(int)direction] = block;
@@ -106,4 +141,31 @@ public class Block {
     {
         return neighbors[(int)direction];
     }
+
+    public bool IsNeighbor(Block block)
+    {
+        for(int i = 0; i < neighbors.Length; i++)
+        {
+            if (neighbors[i] == block)
+                return true;
+        }
+        return false;
+    }
+    #endregion
+
+    public bool DamageBlock(float damage)
+    {
+        Type.Contents.ReduceHealth(damage);
+        if (Type.Contents.Health <= 0)
+        {
+            Type = new BS_Empty();
+
+            return false;
+        }
+        return true;
+    }
+
+    #endregion
+
+
 }
